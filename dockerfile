@@ -2,8 +2,7 @@ FROM node:16.13.0-slim as builder
 
 WORKDIR /usr/src/app
 
-
-COPY ./package*.json ./
+COPY package.json package-lock.json ./
 COPY tsconfig.json ./
 RUN npm install
 COPY src ./src
