@@ -7,7 +7,7 @@ const pessoaController: PessoaController = new PessoaController()
 //Routes
 router.get("/", pessoaController.todos);
 router.post("/novo", pessoaController.novo);
-router.put("/alterar", pessoaController.alterar);
-router.delete("/deletar/:id", pessoaController.daletar);
+router.put("/alterar/:id", pessoaController.alterar);
+router.delete("/deletar/:id", pessoaController.deletar);
 
 export { router };

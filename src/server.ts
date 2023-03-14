@@ -17,6 +17,7 @@ export class Server{
   private middleware(){
     this.server.use(express.json());
     this.server.use(cors(options));
+    this.server.use(express.urlencoded({ extended: true}))
   }
 
   private router(){

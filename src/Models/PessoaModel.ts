@@ -1,9 +1,11 @@
-
+import { DatabaseModel } from "./DatabaseModel";
 export interface IPessoa{
     id?: number,
     nome?: string,
     idade?: number
 }
+
+const banco = new DatabaseModel().pool;
 
 export class Pessoa{
     private _nome: string;
@@ -15,7 +17,7 @@ export class Pessoa{
     constructor(obj?: IPessoa){
         this._nome = obj?.nome ?? "default";
         this._idade = obj?.idade ?? 18,
-        this._id = obj?.id ?? contador;
+        this._id = obj?.id ?? 1;
     }
 
     /*
@@ -24,20 +26,24 @@ export class Pessoa{
         return listaPessoa
     }
     */
-    protected listall(): Pessoa[]{
-        return listaPessoa
-    }
-
-    protected store(): Pessoa[]{
+    protected async listall(): Promise<Pessoa[]>{
         try {
-            listaPessoa.push(new Pessoa({
-                id: contador++,
-                nome: this._nome,
-                idade: this._idade
-            }));
-    
+            //Não é necessario colocar dentro dessa lista, só fiz como
+            //teste de desestruturar um objeto para preencher uma lista
+            //de uma classe
+
+            listaPessoa = [];
+            await banco.query("select * from pessoa").then((res)=>{
+                res.rows.map((pessoa)=>{
+                    listaPessoa.push(new Pessoa({
+                        id: pessoa.id,
+                        nome: pessoa.nome,
+                        idade: pessoa.idade
+                    }))
+                })
+            })
             return listaPessoa;
-            
+
         } catch (error) {
             console.log("Error on model")
             console.log(error);
@@ -46,21 +52,53 @@ export class Pessoa{
         
     }
 
-    protected update(id: number, novo_nome?: string, nova_idade?: number): Pessoa[] | boolean{
-       try {
-        const novo = listaPessoa.find((pessoa)=>{
-            return pessoa._id == id
-        });
+    protected async store(): Promise<boolean>{
+        try {
+            let teste = false;
+            await banco.query(`insert into pessoa(nome,idade)
+                                values('${this._nome}',${this._idade})`)
+            .then((res)=>{
+                if(res.rowCount != 0){
+                   teste = true 
+                }
+            })
 
-        if(novo != undefined){
-            novo._nome = novo_nome ?? novo._nome;
-            novo._idade = nova_idade ?? novo._idade;
-
-            return listaPessoa;
+            return teste;
+            
+        } catch (error) {
+            console.log("Error on model")
+            console.log(error);
+            return false;
         }
-
-        return false
         
+    }
+
+    protected async update(): Promise<boolean>{
+        try {
+            let teste = false;
+            await banco.query(`select nome,idade from pessoa where id=${this._id}`)
+                .then((res)=>{
+                    if(res.rows.length != 0){
+                        teste = true;
+                    }
+                })
+            
+            if(teste){
+                await banco.query(`update pessoa set nome='${this._nome}',
+                                    idade=${this._idade}
+                                    where id=${this._id}`)
+                .then((res)=>{
+                    if(res.rowCount != 0){
+                        teste = true;
+                    }
+                    else{
+                        teste = false;
+                    }
+                })
+            }
+            
+            return teste;
+
         } catch (error) {
             console.log("error on model")
             console.log(error)
@@ -68,17 +106,29 @@ export class Pessoa{
        }
     }
 
-    protected delete(id: number): Pessoa[] | boolean{
+    protected async delete(): Promise<boolean>{
         try {
-            const novo = listaPessoa.filter((pessoa)=>{
-                return pessoa._id != id
-            });
-
-           if(listaPessoa.length != 0){
-                return novo;
-           }
-
-           return false;
+            let teste = false;
+            await banco.query(`select nome,idade from pessoa where id=${this._id}`)
+                .then((res)=>{
+                    if(res.rows.length != 0){
+                        teste = true;
+                    }
+                })
+            
+            if(teste){
+                await banco.query(`delete from pessoa where id=${this._id}`) 
+                .then((res)=>{
+                    if(res.rowCount != 0){
+                        teste = true;
+                    }
+                    else{
+                        teste = false;
+                    }
+                })
+            }
+            
+            return teste;
 
         } catch (error) {
             console.log("error on model")
@@ -104,11 +154,10 @@ export class Pessoa{
     }
 
 }
-
 let listaPessoa: Pessoa[] = [];
-let contador:number = 0;
 
 /*
+let contador:number = 0;
 let listaPessoa: Array<Pessoa> = [
     new Pessoa({
         id: 0,
