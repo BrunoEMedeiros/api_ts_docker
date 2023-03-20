@@ -11,7 +11,8 @@ services:
     ports:
       - "5432:5432"
     networks:
-      - rede1
+      rede1:
+        ipv4_address: 172.16.238.3
     volumes: 
       - db:/var/lib/postgresql/data
   pgadmin:
@@ -24,22 +25,27 @@ services:
     ports:
       - "5050:80"
     networks:
-      - rede1
+      rede1:
+        ipv4_address: 172.16.238.4
     depends_on:
       - db
   api:
     container_name: api_ts
     image: bruno/api_ts
     ports:
-      - "5050:80"
+      - "3000:3000"
     networks:
-      - rede1
+      rede1:
+        ipv4_address: 172.16.238.5
     depends_on:
       - db
       
 networks:
   rede1:
     driver: bridge
+    ipam:
+     config:
+       - subnet: 172.16.238.0/16
 
 volumes:
   db:

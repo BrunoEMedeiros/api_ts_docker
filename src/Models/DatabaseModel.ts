@@ -7,10 +7,10 @@ export class DatabaseModel{
 
     constructor(){
         this._config = {
-            user: 'usuario',
-            host: '10.90.14.155',
+            user: 'root',
+            host: '172.16.238.3',
             database: 'database',
-            password: 'admin',
+            password: 'root',
             port: 5432,
             max: 10, // Pool max size
             idleTimeoutMillis: 10000
